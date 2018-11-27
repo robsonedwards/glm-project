@@ -100,19 +100,42 @@ summary(mdl3)
 #   Removing V7 AND V8 gives AIC 2640.7. We have gone too far. 
 mdl4 <- glm(Y~., family = binomial, data = data[,1:6])
 summary(mdl4)
-#   Removing V3 and 
+#   Removing V3 and V7 should give a better model...
+#     but it leads to numerical issues. 
 mdl5 <- glm(Y~.-V3-V7, family = binomial, data = data[,1:8])
 summary(mdl5)
+#   Even removing only V3 has this issue. 
+mdl6 <- glm(Y~.-V3, family = binomial, data = data[,1:8])
+summary(mdl6)
+print_model_details(Y, mdl6$fitted.values > 0.5)
+mdl6$fitted.values[which(duplicated(mdl6$fitted.values))]
+sum(mdl6$fitted.values[which(duplicated(mdl6$fitted.values))])
+mdl6$linear.predictors[which(duplicated(mdl6$fitted.values))]
+min(mdl6$fitted.values[as.logical(Y)])
+max(mdl6$fitted.values[as.logical(1-Y)])
+#   This is because 11 observations are fitted to a value which is numerically
+#     equal to 1. I am not sure how to fix this problem. 
+
+#   Same as mdl3
+stepAIC(mdl, direction = "both",  trace = F)
 
 # Fitting larger GLMs by adding interaction terms
-mdl5 <- glm(Y~.*., family = binomial, data = data[,1:8])
-summary(mdl5)
+mdl7 <- glm(Y~.*., family = binomial, data = data[,1:8])
+summary(mdl7)
 
 # Only significant interaction terms from the above: AIC 2478
-mdl6 <- glm(Y~.+V1*V2+V1*V3+V2*V3+V2*V4+V5*V6+V6*V7,
+mdl8 <- glm(Y~.+V1*V2+V1*V3+V2*V3+V2*V4+V5*V6+V6*V7,
             family = binomial, data = data[,1:8])
-summary(mdl6)
+summary(mdl8)
 
+# Stepwise selection for the best model with interactions. Takes a while to run.
+if(false){
+  mdl9 <- stepAIC(mdl7, direction = "both",  trace = F)
+  summary(mdl9)
+}
 
-mdl7 <- stepAIC(mdl5, direction = "both",  trace = F)
-summary(mdl7)
+mdl10 <- glm(Y~.*., family = binomial, data = data[,c(1:6, 8)])
+summary(mdl10)
+
+mdl11 <- stepAIC(mdl10, direction = "both",  trace = F)
+summary(mdl11)

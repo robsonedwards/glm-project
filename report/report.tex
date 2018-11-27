@@ -59,15 +59,17 @@ There are at least two problems with the data. First, the explanatory variables 
 
 We consider how to fit a generalised linear model to the data. Our first intuition is to fit a model with all eight explanatory variables and no interactions or higher-order terms. This model assumes that pulsar candidates are distributed according to a Bernoulli distribution where $p$, the probability of being a genuine pulsar, is logit-linear to a weighted sum of V1-V8. 
 
-This initial model, henceforth Model 1, works reasonably well. Model 1 has AIC 2633.8. If we consider the natural classifier suggested by this model, where we classify all candidates with predicted $p > 0.5$ as pulsars and with $p \leq 0.5$ as non-pulsars, we can further quantify its quality. We henceforth refer to the \emph{accuracy} of a classifier as the overall proportion of correctly classified candidates, the \emph{specificity} as the proportion of non-pulsars which it correctly rejects, and the \emph{sensitivity} as the proportion of pulsars which it correctly accepts. Then, Model 1 has accuracy 0.980, sensitivity 0.828, and specificity 0.995.  This is pretty good for a first guess. 
+This initial model, henceforth Model 1, works reasonably well. Model 1 has AIC 2633.8. If we consider the natural classifier suggested by this model, where we classify all candidates with predicted $\hat{p} > 0.5$ as pulsars and with $\hat{p} \leq 0.5$ as non-pulsars, we can quantify the quality of that classifier. We henceforth refer to the \emph{accuracy} of a classifier as the overall proportion of correctly classified candidates, the \emph{specificity} as the proportion of non-pulsars which it correctly rejects, and the \emph{sensitivity} as the proportion of pulsars which it correctly accepts. Then, Model 1 gives rise to ``Classifier 1'', which has accuracy 0.980, sensitivity 0.828, and specificity 0.995.  This is pretty good for a first start. 
 
-However, there are two main problems with the model. First, the classifier is too conservative in classifying pulsar candidates. We note that we can improve this by reducing the classification cutoff (which was $p > 0.5$ above). If we select the cutoff to maximize accuracy, we find that a cutoff $p > 0.364$ gives us an improved classifier ``Model 1B'' with accuracy 0.981, sensitivity 0.853, and specificity 0.993. We consider this to be a better classifier because of the improved accuracy and significantly improved sensitivity. We are particularly interested in sensitivity, because our goal is to find pulsars, and so the cost of missing a true pulsar is ``worse'' than incorrectly accepting a non-pulsar. 
+We plot the accuracy, sensitivity and specificity of the space of all classifiers derived from Model 1 with different cutoffs between 0 and 1 in {\color{red} TODO: insert figure}.
 
-Note that it would not be reasonable to select the cutoff to maximize sensitivity, as this would simply give us a cutoff of 0 with sensitivity 1, and accept every non-pulsar. It would also be absurd to maximize specificity, as this would give us a cutoff of 1 and reject every pulsar. Hence, we maximize accuracy. There exist other reasonable metrics of classifier quality but accuracy is sufficient for our purposes. 
+However, there are three main problems with our first model. First, Classifier 1 is too conservative in classifying pulsar candidates. We note that we can improve this by reducing the classification cutoff (which was $\hat{p} > 0.5$ above). If we select the cutoff to maximize accuracy, we find that a cutoff $\hat{p} > 0.364$ gives us an improved classifier ``Classifier 1B'' with accuracy 0.981, sensitivity 0.853, and specificity 0.993. We consider this to be a better classifier because of the improved accuracy and significantly improved sensitivity. We are particularly interested in sensitivity, because our goal is to find pulsars, and so the cost of missing a true pulsar is ``worse'' than incorrectly accepting a non-pulsar. Thus, roughly speaking, gaining 0.025 sensitivity is ``worth'' losing 0.002 specificity. 
 
-The second problem is the collinearity issue identified in \S\ref{subsec:data}. V3 and V4 are highly correlated and V7 and V8 are highly correlated. We calculate the variance inflation factors (VIFs) for Model 1 and present them in table \ref{table:vif}. We recall from lectures that 5 or 10 are reasonable cutoffs for VIF. 
+Note that it would not be reasonable to select the cutoff by maximizing sensitivity, as this would simply give us a cutoff of 0 with sensitivity 1, and accept every non-pulsar. It would also be absurd to maximize specificity, as this would give us a cutoff of 1 and reject every pulsar. Hence, we maximize accuracy. There exist other reasonable metrics of classifier quality but accuracy is sufficient for our purposes. 
 
-\begin{table}%[h!]
+The second problem is that the effects of V7 and V8 are not significant in the model. The p-value for the effect of V7 is 0.58 and for V8, 0.12. We will address this momentarily. 
+
+\begin{table}[h!]
 \centering
 \begin{tabular}{|c c c c c c c c|} 
  \hline
@@ -80,8 +82,17 @@ The second problem is the collinearity issue identified in \S\ref{subsec:data}. 
 \label{table:vif}
 \end{table}
 
-{\color{red} Another problem?}
 
+The third problem is the collinearity issue identified in \S\ref{subsec:data}. V3 and V4 are highly correlated and V7 and V8 are highly correlated. We calculate the variance inflation factors (VIFs) for Model 1 and present them in table \ref{table:vif}. We recall from lectures that 5 or 10 are reasonable cutoffs for VIF. V3, V7, and V8 have the largest VIFs, so we now fit and analyse three more models, one each without V3, V7, and V8. Each of these models has all significant effects. The model without V8 has AIC 2634.2. The model without V7 has AIC 2632.1. 
+
+The model without V3, unfortunately, has some numerical issues. Eleven of the pulsars are fitted to linear predictor values greater than 30. These give fitted values which are numerically equivalent. (Fair enough, $e^{30} / (1 + e^{30})$ is extremely close to 1.) This model has AIC 3136.3. Also, the natural classifier it suggests has accuracy 0.975, sensitivity 0.774, and specificity 0.995. This is much worse than what we've been working with so far. 
+I am not sure how to remedy the numerical issues. I know that we \emph{do not} have perfect separation, which can give rise to a similar error. I know this because the greatest fitted value among non-pulsars is $\hat{p} = 0.9999993$, and the least among pulsars is $\hat{p} = 0.00104$. So there is some overlap in the classes on the predictor scale under this model. 
+
+We decide that the model without V7, henceforth ``Model 2'', is the best yet. Conducting a stepwise selection by AIC, starting with Model 1, also selects Model 2. 
+
+We can consider larger models. 
+
+First, we consider ``Model 3'', which is the model with all eight explanatory variables and also all 28 interactions between them. 
 
 \subsection{Model Selection}
 
