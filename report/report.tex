@@ -1,0 +1,90 @@
+
+\documentclass[11pt, oneside]{article}
+\usepackage{geometry} 
+\geometry{a4paper} 
+%\usepackage[parfill]{parskip}  % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}	
+\usepackage{amssymb}
+\usepackage{xcolor}
+
+\pagenumbering{gobble}
+
+\definecolor{codegray}{gray}{0.88}
+\newcommand \Rcode[1]{{\texttt{\colorbox{codegray}{#1}}}}
+%\newcommand \Rcode[1]{{\texttt{{#1}}}}
+
+\title{Finding Pulsars with a Generalised Linear Model}
+\author{Robson Edwards}
+\date{November 27, 2018}
+
+\begin{document}
+
+\maketitle
+
+%If you fit a model to some data, consider whether there is a need for goodness-of-fit tests. State the assumptions of the methods you use, and consider how likely they are to be met – see the above advice on the Discussion section for more on this.
+
+\section{Executive Summary}
+
+We ...
+
+\section{Introduction}
+
+What is the motivation for the work?
+
+What is the data? 
+
+What are the purpose and/or objectives of the work/analysis?
+
+What methods are commonly used for this sort of analysis? How does the analysis align or differ from these methods? 
+
+\section{Methods}
+
+Add a brief summary of Methods
+
+\subsection{Data}
+
+This is an important section. Information needs to be given on the data structure and how the data was collected, or where it was downloaded from. Either a plot or a table illustrating the data would be useful. A table could give some descriptive statistics, or, if the sample size is small, list all observations. It would be nice if from the description of the data it essentially already becomes clear why a GLM- based analysis is worthwhile (for example, it might be clear from a plot that there is some interesting relationship). You could also already acknowledge possible problems with the data (if there are any). Note that if I feel that something went wrong in the analysis, then I might ask you to send me the data set that you analysed.
+
+\subsection{Model Formulation}
+
+Formulate the model, explaining why it seems appropriate for the data at hand. For example: “Since count data are considered, a Poisson GLM is applied [...] The shape of the functional relationship between ... and ... appears to have a rather complicated form. This motivates the consideration of a second, more complicated model, ...”. Here’s an example equation, just in case you want to use LaTeX for your coursework but are still learning the different commands:
+
+$\log(\mathbb{E}(Y_i)) = \beta_0 + \beta_1x_i$
+
+I expect that many of you will consider at least two different models (e.g., models with and without
+some covariate, or models with different polynomial orders in the predictor, or even with different link functions). In that case, I recommend to simply call them say Model 1, Model 2, etc., or whatever makes it easiest to refer to them.
+
+\section{Results}
+
+What are the main findings of the analysis? Try to relate these findings to the objectives you outlined in the introduction. Include both significant and non-significant findings in your report. Be sure to use appropriate language so that the reader does not mistake significant findings for substantial (practically significant) findings.
+
+Quantify any findings of your analysis – e.g. using confidence intervals described using non-technical language.
+
+How well do the model(s) describe the data? If model performance is poor, how/in what situations is it poor?
+
+\section{Conclusion}
+
+What, if anything, can you conclude based on the results? 
+
+What are the restrictions for any conclusions drawn based on this analysis?
+
+Are you happy that the results summarised are defensible? If there are any issues with model validity, how might these be affecting the results in this case? Be sure to use non-technical language.
+
+Has this work highlighted issues that could be addressed with further work? If so, what would recommend the next steps/future work entails?
+
+\begin{thebibliography}{9}
+
+\bibitem{R}{
+R Core Team (2018). 
+\textit{R: A language and environment for statistical
+computing.} R Foundation for Statistical Computing, Vienna, Austria.
+URL https://www.R-project.org/.
+}
+ 
+{\color{red}Also cite my data }
+ 
+\end{thebibliography}
+
+\section*{Appendix: R Code}
+
+\end{document}
