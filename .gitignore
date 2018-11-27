@@ -1,3 +1,13 @@
 .Rproj.user
 *.Rproj
 *.Rhistory
+
+.Rproj.user
+.RData
+.Ruserdata
+*.pdf
+*.log
+*.synctex.gz
+*.out
+*.aux
+*.toc
