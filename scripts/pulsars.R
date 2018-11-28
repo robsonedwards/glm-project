@@ -30,23 +30,12 @@ print_model_details <- function(Y, Ypred){
 }
 #### Exploratory Data Analysis ####
 
-data <- read.csv("data/HTRU_2.csv", header=FALSE) #Change path 
+data <- read.csv("data/HTRU_2.csv", header=FALSE) #Change path for your system
 summary(data)
 summary(data[data$V9==T,])
 summary(data[data$V9==F,])
 set.seed(4607)
 indices <- sample(1:nrow(data), 1000, replace = F)
-
-# Some plots of the data
-store <- par()$xpd # Store your xpd so it can be restored later
-par(xpd = NA)
-pairs(data[indices, 1:8], col = c("orange1", "cyan")[data[indices, 9] + 1],
-       lower.panel = NULL#, panel = panel.smooth
-      )
-legend( "bottomleft", fill = c("orange1", "cyan"), 
-        legend = c("non-pulsar", "pulsar") )
-par(xpd = store) # Restore your xpd
-rm(store)
 
 # Note the collinearity issue: high correlation between (V3, V4) and (V7, V8). 
 round(cor(data), 2)
@@ -59,36 +48,15 @@ summary(mdl)
 
 # Accuracy and Confusion Matrix for this model as a classifier 
 #   with cutoff p = 0.5
-Ypred1 <- mdl$fitted.values > 0.5
-print_model_details(Y, Ypred1)
-
+print_model_details(Y, mdl$fitted.values > 0.5)
 #   with cutoff p = 0.4 
-Ypred2 <- mdl$fitted.values > 0.4
-print_model_details(Y, Ypred2)
-
-#   plotting all cutoffs in the interval [0, 1]
+print_model_details(Y, mdl$fitted.values > 0.4)
+#   best cutoff
 accuracy <- Vectorize(function(cutoff){
   get_accuracy(Y, mdl$fitted.values > cutoff)
 })
-sensitivity <- Vectorize(function(cutoff){ # true positives / actual positives
-  confusion <- get_confusion_matrix(Y, mdl$fitted.values > cutoff)
-  confusion[2, 2] / confusion[3, 2]
-})
-specificity <- Vectorize(function(cutoff){ # true negatives / actual negatives 
-  confusion <- get_confusion_matrix(Y, mdl$fitted.values > cutoff)
-  confusion[1, 1] / confusion[3, 1]
-})
-
-plot(accuracy, 0, 1, lwd = 2, col = "orange1", xlab = "cutoff", ylab = "", 
-     ylim = c(0.6, 1))
-plot(sensitivity, 0, 1, add = T, lwd = 2, col = "cyan")
-plot(specificity, 0, 1, add = T, lwd = 2, col = "green2")
-legend(0.15, 0.8, legend=c("accuracy", "sensitivity", "specificity"),
-       col=c("orange1", "cyan", "green2"), lwd = 2)
 cutoff <- unlist(optimize(accuracy, c(0.1, 0.8), maximum = T)["maximum"])
-points(cutoff, accuracy(cutoff))
-text(0.4, 0.95, paste(round(cutoff, 3), ", ", round(accuracy(cutoff), 3), 
-                      sep = ""))
+print_model_details(Y, mdl$fitted.values > cutoff)
 
 # Fitting smaller GLMs by removing some of V3, V7, V8 
 #   Removing V8 gives a model with AIC 2634.3
