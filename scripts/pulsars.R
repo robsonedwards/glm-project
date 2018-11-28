@@ -36,14 +36,15 @@ summary(data[data$V9==T,])
 summary(data[data$V9==F,])
 set.seed(4607)
 indices <- sample(1:nrow(data), 1000, replace = F)
+# See also plotting code 
 
 # Note the collinearity issue: high correlation between (V3, V4) and (V7, V8). 
 round(cor(data), 2)
 
+Y <- data[, 9]
+
 #### Fit simple GLMs ###########################################################
 # Fit a GLM with all 8 features and no interactions
-X <- cbind(rep(1, nrow(data)), data[, 1:8])
-Y <- data[, 9]
 mdl <- glm(Y~., family = binomial, data = data[, 1:8])
 summary(mdl)
 
@@ -61,53 +62,42 @@ print_model_details(Y, mdl$fitted.values > cutoff)
 
 # Fit smaller GLMs by removing some of V3, V7, V8 
 #   Removing V8 gives a model with AIC 2634.3
-mdl2 <- glm(Y~., family = binomial, data = data[,1:7])
-summary(mdl2)
+mdl1_v8 <- glm(Y~., family = binomial, data = data[,1:7])
+summary(mdl1_v8)
 #   Removing V7 gives a model with AIC 2632.1
-mdl3 <- glm(Y~., family = binomial, data = data[,c(1:6, 8)])
-summary(mdl3)
+mdl2 <- glm(Y~.-V7, family = binomial, data = data[,1:8])
+summary(mdl2)
 #   Removing V3 and V7 should give a better model...
 #     but it leads to numerical issues. 
-mdl4 <- glm(Y~.-V3-V7, family = binomial, data = data[,1:8])
-summary(mdl4)
+badmdl1 <- glm(Y~.-V3-V7, family = binomial, data = data[,1:8])
+summary(badmdl1)
 #   Even removing only V3 has this issue. 
-mdl5 <- glm(Y~.-V3, family = binomial, data = data[,1:8])
-summary(mdl5)
+badmdl2 <- glm(Y~.-V3, family = binomial, data = data[,1:8])
+summary(badmdl2)
 #     Diagnostics... 
-print_model_details(Y, mdl6$fitted.values > 0.5)
-mdl6$fitted.values[which(duplicated(mdl6$fitted.values))]
-sum(mdl6$fitted.values[which(duplicated(mdl6$fitted.values))])
-mdl6$linear.predictors[which(duplicated(mdl6$fitted.values))]
-min(mdl6$fitted.values[as.logical(Y)])
-max(mdl6$fitted.values[as.logical(1-Y)])
+print_model_details(Y, badmdl2$fitted.values > 0.5)
+badmdl2$fitted.values[which(duplicated(badmdl2$fitted.values))]
+sum(badmdl2$fitted.values[which(duplicated(badmdl2$fitted.values))])
+badmdl2$linear.predictors[which(duplicated(badmdl2$fitted.values))]
+min(badmdl2$fitted.values[as.logical(Y)])
+max(badmdl2$fitted.values[as.logical(1-Y)])
 #   I believe that the issues arise because 11 observations are fitted to a
 #     value which is numerically equal to 1. I am not sure how to fix this
 #     problem.
+mdl3 <- glm(Y~.-V7-V4, family = binomial, data = data[,1:8])
+summary(mdl3)
 
 #   Stepwise selection finds the same model as mdl3
 stepAIC(mdl, direction = "both",  trace = F)
 
 #### Fit larger GLMs by adding interaction terms ###############################
-mdl7 <- glm(Y~.*., family = binomial, data = data[,1:8])
-summary(mdl7)
-
-# Only significant interaction terms from the above: AIC 2478
-mdl8 <- glm(Y~.+V1*V2+V1*V3+V2*V3+V2*V4+V5*V6+V6*V7,
-            family = binomial, data = data[,1:8])
-summary(mdl8)
+# Fit a model with every interaction term. AIC 2466.8
+mdl4 <- glm(Y~.*., family = binomial, data = data[,1:8])
+summary(mdl4)
 
 # Stepwise model selection with interactions. Takes a while to run.
 if(F){ #Change to T to run this. 
-  mdl9 <- stepAIC(mdl7, direction = "both",  trace = F)
-  summary(mdl9)
+  mdl5 <- stepAIC(mdl3, direction = "both",  trace = F)
+  summary(mdl5)
 }
 
-# Without V7, which we already identified as too collinear with V8
-mdl10 <- glm(Y~.*., family = binomial, data = data[,c(1:6, 8)])
-summary(mdl10)
-
-# Stepwise model selection, with interactions, without V7. 
-if(T){ #Change to T to run this. 
-  mdl11 <- stepAIC(mdl10, direction = "both",  trace = F)
-  summary(mdl11)
-}
