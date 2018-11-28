@@ -1,8 +1,9 @@
 require(MASS)
 require(ggplot2)
 require(car)
+data <- read.csv("data/HTRU_2.csv", header=FALSE) #Change path for your system
 
-#### Functions ####
+#### Functions #################################################################
 logistic <- function(x) exp(x) / (1 + exp(x))
 
 logit <- function(p) log(p / (1 - p))
@@ -28,9 +29,8 @@ print_model_details <- function(Y, Ypred){
   print(paste("Specificity:", round(confusion[1, 1] / confusion[3, 1], 3)))
   print(paste("Sensitivity:", round(confusion[2, 2] / confusion[3, 2], 3)))
 }
-#### Exploratory Data Analysis ####
+#### Exploratory Data Analysis #################################################
 
-data <- read.csv("data/HTRU_2.csv", header=FALSE) #Change path for your system
 summary(data)
 summary(data[data$V9==T,])
 summary(data[data$V9==F,])
@@ -40,6 +40,7 @@ indices <- sample(1:nrow(data), 1000, replace = F)
 # Note the collinearity issue: high correlation between (V3, V4) and (V7, V8). 
 round(cor(data), 2)
 
+#### Fit simple GLMs ###########################################################
 # Fit a GLM with all 8 features and no interactions
 X <- cbind(rep(1, nrow(data)), data[, 1:8])
 Y <- data[, 9]
@@ -58,36 +59,35 @@ accuracy <- Vectorize(function(cutoff){
 cutoff <- unlist(optimize(accuracy, c(0.1, 0.8), maximum = T)["maximum"])
 print_model_details(Y, mdl$fitted.values > cutoff)
 
-# Fitting smaller GLMs by removing some of V3, V7, V8 
+# Fit smaller GLMs by removing some of V3, V7, V8 
 #   Removing V8 gives a model with AIC 2634.3
 mdl2 <- glm(Y~., family = binomial, data = data[,1:7])
 summary(mdl2)
 #   Removing V7 gives a model with AIC 2632.1
 mdl3 <- glm(Y~., family = binomial, data = data[,c(1:6, 8)])
 summary(mdl3)
-#   Removing V7 AND V8 gives AIC 2640.7. We have gone too far. 
-mdl4 <- glm(Y~., family = binomial, data = data[,1:6])
-summary(mdl4)
 #   Removing V3 and V7 should give a better model...
 #     but it leads to numerical issues. 
-mdl5 <- glm(Y~.-V3-V7, family = binomial, data = data[,1:8])
-summary(mdl5)
+mdl4 <- glm(Y~.-V3-V7, family = binomial, data = data[,1:8])
+summary(mdl4)
 #   Even removing only V3 has this issue. 
-mdl6 <- glm(Y~.-V3, family = binomial, data = data[,1:8])
-summary(mdl6)
+mdl5 <- glm(Y~.-V3, family = binomial, data = data[,1:8])
+summary(mdl5)
+#     Diagnostics... 
 print_model_details(Y, mdl6$fitted.values > 0.5)
 mdl6$fitted.values[which(duplicated(mdl6$fitted.values))]
 sum(mdl6$fitted.values[which(duplicated(mdl6$fitted.values))])
 mdl6$linear.predictors[which(duplicated(mdl6$fitted.values))]
 min(mdl6$fitted.values[as.logical(Y)])
 max(mdl6$fitted.values[as.logical(1-Y)])
-#   This is because 11 observations are fitted to a value which is numerically
-#     equal to 1. I am not sure how to fix this problem. 
+#   I believe that the issues arise because 11 observations are fitted to a
+#     value which is numerically equal to 1. I am not sure how to fix this
+#     problem.
 
-#   Same as mdl3
+#   Stepwise selection finds the same model as mdl3
 stepAIC(mdl, direction = "both",  trace = F)
 
-# Fitting larger GLMs by adding interaction terms
+#### Fit larger GLMs by adding interaction terms ###############################
 mdl7 <- glm(Y~.*., family = binomial, data = data[,1:8])
 summary(mdl7)
 
@@ -96,14 +96,18 @@ mdl8 <- glm(Y~.+V1*V2+V1*V3+V2*V3+V2*V4+V5*V6+V6*V7,
             family = binomial, data = data[,1:8])
 summary(mdl8)
 
-# Stepwise selection for the best model with interactions. Takes a while to run.
-if(false){
+# Stepwise model selection with interactions. Takes a while to run.
+if(F){ #Change to T to run this. 
   mdl9 <- stepAIC(mdl7, direction = "both",  trace = F)
   summary(mdl9)
 }
 
+# Without V7, which we already identified as too collinear with V8
 mdl10 <- glm(Y~.*., family = binomial, data = data[,c(1:6, 8)])
 summary(mdl10)
 
-mdl11 <- stepAIC(mdl10, direction = "both",  trace = F)
-summary(mdl11)
+# Stepwise model selection, with interactions, without V7. 
+if(T){ #Change to T to run this. 
+  mdl11 <- stepAIC(mdl10, direction = "both",  trace = F)
+  summary(mdl11)
+}
