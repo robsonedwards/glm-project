@@ -68,3 +68,27 @@ points(cutoff, accuracy(cutoff))
 text(0.4, 0.95, paste(round(cutoff, 3), ", ", round(accuracy(cutoff), 3), 
                       sep = ""))
 dev.off()
+
+# Plotting for model 4
+mdl <- glm(Y~., family = binomial, data = data[, 1:8])
+
+pdf(file = "figures/cutoffs4.pdf", width = 5, height = 5)
+plot(accuracy, 0, 1, lty = 2, col = "grey", xlab = "cutoff", ylab = "", 
+     ylim = c(0.75, 1))
+plot(sensitivity, 0, 1, add = T, lty = 2, col = "grey")
+plot(specificity, 0, 1, add = T, lty = 2, col = "grey")
+mdl <- glm(Y~.*., family = binomial, data = data[,1:8])
+plot(accuracy,    0, 1, add = T, lwd = 2, col = "orange1")
+plot(sensitivity, 0, 1, add = T, lwd = 2, col = "cyan")
+plot(specificity, 0, 1, add = T, lwd = 2, col = "green2")
+legend(0.11, 0.82, legend=c("accuracy", "sensitivity", "specificity"),
+       col=c("orange1", "cyan", "green2"), lwd = 2)
+cutoff <- unlist(optimize(accuracy, c(0.1, 0.8), maximum = T)["maximum"])
+points(cutoff, accuracy(cutoff))
+text(0.5, 0.97, paste(round(cutoff, 3), ", ", round(accuracy(cutoff), 3), 
+                      sep = ""))
+points(0.048, accuracy(0.048))
+text(0.2, 0.93, paste(round(0.048, 3), ", ", round(accuracy(0.048), 3), 
+                       sep = ""))
+dev.off()
+

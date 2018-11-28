@@ -88,7 +88,7 @@ mdl3 <- glm(Y~.-V7-V4, family = binomial, data = data[,1:8])
 summary(mdl3)
 
 #   Stepwise selection finds the same model as mdl3
-stepAIC(mdl, direction = "both",  trace = F)
+if(F) stepAIC(mdl, direction = "both",  trace = F)
 
 #### Fit larger GLMs by adding interaction terms ###############################
 # Fit a model with every interaction term. AIC 2466.8
@@ -99,5 +99,25 @@ summary(mdl4)
 if(F){ #Change to T to run this. 
   mdl5 <- stepAIC(mdl3, direction = "both",  trace = F)
   summary(mdl5)
+}
+
+#### Model Comparison #####
+for(model in list(mdl, mdl2, mdl3, mdl4, mdl5)){
+  accuracy <- Vectorize(function(c){
+    get_accuracy(Y, model$fitted.values > c)
+  })
+  cutoff <- unlist(optimize(accuracy, c(0.1, 0.8), maximum = T)["maximum"])
+  confusion <- get_confusion_matrix(Y, model$fitted.values > cutoff)
+  ac <- round(get_accuracy(Y, model$fitted.values > cutoff), 3)
+  sp <- round(confusion[1, 1] / confusion[3, 1], 3)
+  se <- round(confusion[2, 2] / confusion[3, 2], 3)
+  confusion <- get_confusion_matrix(Y, model$fitted.values > 0.5)
+  ac5 <- round(get_accuracy(Y, model$fitted.values > cutoff), 3)
+  sp5 <- round(confusion[1, 1] / confusion[3, 1], 3)
+  se5 <- round(confusion[2, 2] / confusion[3, 2], 3)
+  print(paste(
+              round(model$aic, 1), round(max(unname(vif(model))), 2), ac5, sp5, se5, 
+              ac, sp, se, round(cutoff, 3),
+              sep = " & "))
 }
 
