@@ -2,8 +2,6 @@ data <- read.csv("data/HTRU_2.csv", header=FALSE)
 indices <- sample(1:nrow(data), 1000, replace = F)
 
 #### Functions ####
-
-#### Functions ####
 get_confusion_matrix <- function(Y, Ypred){
   confusion <- rbind ( c(sum(!Ypred & !Y), sum(!Ypred & Y), sum(!Ypred)   ), 
                        c(sum(Ypred & !Y),  sum(Ypred & Y),  sum(Ypred)    ),
@@ -29,14 +27,17 @@ print_model_details <- function(Y, Ypred){
 
 # Scatterplot matrix of V1-V8 with different colors for pulsars 
 store <- par()$xpd # Store your xpd so it can be restored later
-pdf(file = "figures/scattermatrix.pdf", width = 8, height = 8)
+#pdf(file = "figures/scattermatrix.pdf", width = 8, height = 8)
 par(xpd = NA)
-pairs(data[indices, 1:8], col = c("orange1", "cyan")[data[indices, 9] + 1],
+for(v in 5:8){print(min(data[, v]))}
+data2 <- data %>% transform(V7 = pmax(V7, 0), V8 = pmax(V8, 0))
+for(v in 5:8){print(min(data2[, v]))}
+data2 <- data2 %>% transform(V7 = log(V7), V8 = log(V8))
+pairs(data2[indices, 1:8], col = c("orange1", "cyan")[data2[indices, 9] + 1],
       lower.panel = NULL#, panel = panel.smooth
 )
 legend( "bottomleft", fill = c("orange1", "cyan"), 
         legend = c("non-pulsar", "pulsar") )
-dev.off()
 par(xpd = store) # Restore your xpd
 rm(store)
 
