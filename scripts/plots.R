@@ -1,5 +1,5 @@
 data <- read.csv("data/HTRU_2.csv", header=FALSE)
-indices <- sample(1:nrow(data), 1000, replace = F)
+indices <- sample(1:nrow(data), 200, replace = F)
 
 #### Functions ####
 get_confusion_matrix <- function(Y, Ypred){
@@ -32,7 +32,8 @@ par(xpd = NA)
 for(v in 5:8){print(min(data[, v]))}
 data2 <- data %>% transform(V7 = pmax(V7, 0), V8 = pmax(V8, 0))
 for(v in 5:8){print(min(data2[, v]))}
-data2 <- data2 %>% transform(V7 = log(V7), V8 = log(V8))
+data2 <- data2 %>% transform(LV7 = log(V7), LV8 = log(V8)) %>% select(-V7, -V8)
+data2 <- data2[ , c(1:6, 8, 9, 7)]
 pairs(data2[indices, 1:8], col = c("orange1", "cyan")[data2[indices, 9] + 1],
       lower.panel = NULL#, panel = panel.smooth
 )
