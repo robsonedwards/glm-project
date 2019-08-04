@@ -1,6 +1,7 @@
 require(MASS)
 require(ggplot2)
 require(car)
+require(magrittr)
 data <- read.csv("data/HTRU_2.csv", header=FALSE) #Change path for your system
 
 #### Functions #################################################################
