@@ -96,7 +96,7 @@ mdl4 <- glm(Y~.*., family = binomial, data = data[,1:8])
 summary(mdl4)
 
 # Stepwise model selection with interactions. Takes a while to run.
-if(F){ #Change to T to run this. 
+if(T){ #Change to T to run this. 
   mdl5 <- stepAIC(mdl3, direction = "both",  trace = F)
   summary(mdl5)
 }
